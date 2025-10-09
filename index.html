@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>강우진 이벤트 조회</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      #user-results[hidden] {
+        display: none !important;
+      }
+      #user-results:not([hidden]) {
+        display: block;
+      }
+      :root {
+        color-scheme: light;
+        --bg: #f6f7f9;
+        --card: #ffffff;
+        --text-primary: #1f2933;
+        --text-secondary: #52606d;
+        --border: #e4e7eb;
+        --accent: #2563eb;
+        --accent-soft: rgba(37, 99, 235, 0.06);
+        --radius-lg: 24px;
+        --radius-md: 16px;
+        --shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Inter", "Noto Sans KR", sans-serif;
+        background: radial-gradient(
+            circle at 0% -10%,
+            rgba(59, 130, 246, 0.18),
+            transparent 45%
+          ),
+          radial-gradient(
+            circle at 100% 0%,
+            rgba(147, 197, 253, 0.2),
+            transparent 40%
+          ),
+          var(--bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: clamp(32px, 4vw, 64px) clamp(16px, 5vw, 48px);
+        color: var(--text-primary);
+      }
+
+      .shell {
+        max-width: 520px;
+        width: 100%;
+        background: var(--card);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        padding: clamp(32px, 4vw, 48px);
+        border: 1px solid rgba(226, 232, 240, 0.6);
+        display: grid;
+        gap: 28px;
+      }
+
+      header {
+        display: grid;
+        gap: 12px;
+      }
+
+      header h1 {
+        font-size: clamp(1.6rem, 2vw + 1rem, 2.2rem);
+        font-weight: 600;
+        margin: 0;
+        letter-spacing: -0.02em;
+      }
+
+      header p {
+        margin: 0;
+        color: var(--text-secondary);
+        line-height: 1.55;
+        font-size: 0.96rem;
+      }
+
+      form {
+        display: grid;
+        gap: 12px;
+      }
+
+      label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+      }
+
+      input {
+        width: 100%;
+        padding: 14px 18px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        font-size: 1rem;
+        background: #ffffff;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: rgba(37, 99, 235, 0.45);
+        box-shadow: 0 0 0 4px var(--accent-soft);
+      }
+
+      .end {
+        pointer-events: none;
+        opacity: 0.5;
+      }
+
+      .error-message {
+        font-size: 0.85rem;
+        color: #ef4444;
+        margin-top: 6px;
+        display: none;
+      }
+
+      .error-message.show {
+        display: block;
+      }
+
+      input.error {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+      }
+
+      button {
+        margin-top: 4px;
+        background: var(--accent);
+        color: #ffffff;
+        border: none;
+        border-radius: 12px;
+        padding: 14px 24px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      .card {
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        padding: 22px;
+        display: grid;
+        gap: 18px;
+        background: #fafbfc;
+      }
+
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(37, 99, 235, 0.1);
+        color: var(--accent);
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      .total {
+        font-weight: 600;
+        color: var(--text-secondary);
+      }
+
+      .grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px;
+        border-radius: 12px;
+        border: 1px solid rgba(226, 232, 240, 0.7);
+        background: #ffffff;
+      }
+
+      .row span:first-child {
+        font-size: 0.92rem;
+        color: var(--text-secondary);
+      }
+
+      .row span:last-child {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .empty {
+        border-radius: var(--radius-md);
+        border: 1px dashed var(--border);
+        padding: 28px;
+        text-align: center;
+        background: #ffffff;
+      }
+
+      .empty strong {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .empty p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--text-secondary);
+        font-size: 0.82rem;
+      }
+
+      footer a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      footer a:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 540px) {
+        .shell {
+          padding: 28px 20px;
+        }
+
+        footer {
+          flex-direction: column;
+          gap: 8px;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="empty" style="margin-top: 8px; background: #fffbe9; border: 1px solid #ffe0a3;">
+        <strong>집계 조회/정정 기간이 종료되었습니다.</strong>
+        <ul style="margin: 18px 0 0 0; padding: 0 0 0 18px; text-align: left; font-size: 0.98rem; line-height: 1.7; color: var(--text-secondary)">
+          <li><b>10/4</b>: 전체 집계 및 추가 재검수 완료</li>
+          <li><b>10/7 ~ 9</b>: 고유번호 집계 누락 정정 기간</li>
+          <li style="color:black; font-weight:700;"><b>10/10 ~ 11</b>: 데이터 시트 최종 정정 및 완성</li>
+          <li><b>10/13</b>: 추첨 및 당첨자 발표</li>
+          <li><b>10/14 ~ 16</b>: 당첨자 네이버폼 입력 기간</li>
+          <li><b>10/20</b>: 상품 발송 시작</li>
+        </ul>
+      </div>
+      <div class="end">
+      <header>
+        <h1>강우진 파이널/생방송 이벤트 집계 조회</h1>
+        <p>
+          고유번호를 입력하면 19일부터 25일의 투표 집계 내역(파이널 이벤트)와 25일 라이브투표 (생방송 이벤트)의 집계 내역을 확인할 수 있습니다.<br><br>
+          ❗️19일~23일은 수기 집계로 오류가 존재할 수 있습니다.<br><br>
+          🙋🏻‍♀️집계 내역에 오류가 있어요<br>
+          🙇🏻‍♀️1:1대화로 오류 내역을 말씀해주시면, 검수 스텝이 확인 후 정정을 도와드리고 있습니다.
+        </p>
+      </header>
+
+
+      <form id="user-form">
+        <label for="userno2">고유번호</label>
+        <input
+          id="userno2"
+          name="userno2"
+          type="text"
+          placeholder="예: 123ABC 또는 AB1234"
+          autocomplete="off"
+          pattern="^([A-Z]{2}\d{4}|\d{3}[A-Z]{3})$"
+          maxlength="6"
+          required
+          disabled
+        />
+        <div id="error-message" class="error-message">
+          영문과 숫자만 입력 가능합니다. (영문2자리+숫자4자리 또는
+          숫자3자리+영문3자리)
+        </div>
+        <button type="submit" disabled>집계 조회</button>
+      </form>
+
+
+      <section id="user-results" class="card" hidden>
+        <div class="card-header">
+          <div>
+            <div class="tag" id="user-badge">user_id</div>
+            <!--h2 id="user-title" style="margin: 10px 0 0; font-size: 1.2rem;">-</h2-->
+            <div
+              id="user-ids"
+              style="
+                margin-top: 6px;
+                font-size: 0.98rem;
+                color: var(--text-secondary);
+              "
+            >
+              <span id="userno1-label"></span>
+              <span id="userno2-label"></span>
+            </div>
+          </div>
+        </div>
+        <div class="grid" id="user-stats"></div>
+      </section>
+
+      <div id="user-empty" class="empty" hidden>
+        <strong>조회 결과가 없습니다.</strong>
+        <p>고유번호를 다시 확인해주세요.</p>
+      </div>
+      </div>
+
+      <footer>
+        <span></span>
+        <a href="https://m.dcinside.com/board/kangwoojjn" target="_blank"
+          >강우진 마이너 갤러리</a
+        >
+      </footer>
+    </div>
+
+  </body>
+</html>
